@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+	<plcs>
+		<plcConnection>
+			<vendor>Siemens</vendor> <!-- Valid vendors in seperate vendors file -->
+			<ip>192.168.0.1</ip> <!-- IP address ex. 127.0.0.1 -->
+			<cpuType>S71500</cpuType> <!-- Cpu type from https://github.com/S7NetPlus/s7netplus/wiki -->
+			<slot>1</slot> <!-- Slot is base 0 standard: psu=0, cpu=1 -->
+			<rack>0</rack> <!-- If you have multiple racks on one cpu, use this -->
+		</plcConnection>
+		<plcConnection>
+			<vendor>Siemens</vendor> <!-- Valid vendors in seperate vendors file -->
+			<ip>192.168.0.2</ip> <!-- IP address ex. 127.0.0.1 -->
+			<cpuType>S71500</cpuType> <!-- Cpu type from https://github.com/S7NetPlus/s7netplus/wiki -->
+			<slot>1</slot> <!-- Slot is base 0 standard: psu=0, cpu=1 -->
+			<rack>0</rack> <!-- If you have multiple racks on one cpu, use this -->
+		</plcConnection>
+	</plcs>
+	<opcua>
+		<opcConnection>
+			<url>opc.tcp://192.168.0.1:4840</url>
+			<user></user>
+			<pass></pass>
+		</opcConnection>
+		<opcConnection>
+			<url>opc.tcp://192.168.0.1:4841</url>
+			<user></user>
+			<pass></pass>
+		</opcConnection>
+	</opcua>
+	<dbs>
+		<db>
+			<type>MongoDB</type>
+			<ip>127.0.0.1</ip>
+			<port>27017</port>
+			<database>testDB</database>
+		</db>
+		<db>
+			<type>MongoDB</type>
+			<ip>127.0.0.2</ip>
+			<port>27017</port>
+			<database>testDB</database>
+		</db>
+	</dbs>
+</configuration>
