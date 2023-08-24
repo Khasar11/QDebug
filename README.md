@@ -10,4 +10,5 @@ Then you will be able to read this cached from the db on connect to server, on u
 
 Example communication:
 PLC -> OPCUA -> Server with configured connection to OPCUA -> Client
+
 Client modification -> Server -> S7Net/respective lib -> PLC
