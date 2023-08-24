@@ -6,16 +6,11 @@ namespace QDebug.Server
 {
     internal class CommandHandler
     {
-        private QDebug.Shared.Logger.Logger Logger;
-        private List<PLCConnection> PLCConnections;
-        private List<DBConnection> DBConnections;
-        private List<OPCUAConnection> OPCUAConnections;
-        public CommandHandler(QDebug.Shared.Logger.Logger logger, ref List<PLCConnection> plcconnections, ref List<DBConnection> dbconnections, ref List<OPCUAConnection> opcuaconnections)
+
+        private Startup _application;
+        public CommandHandler(Startup application)
         {
-            Logger = logger;
-            PLCConnections = plcconnections;
-            DBConnections = dbconnections;
-            OPCUAConnections = opcuaconnections;
+            _application = application;
         }
         public void EvaluateString(string input, ref bool stopEvaluating)
         {
@@ -27,20 +22,20 @@ namespace QDebug.Server
         private void PLC(string[] args)
         {
             args = args.Skip(1).ToArray(); // remove first entry 
-            PLCConnection? connection = PLCConnections.Find(x => x.IP == args[0]);
+            PLCConnection? connection = _application.ConnectionUtils.FindPLCByIP(args[0]);
             if (connection == null)
             {
-                Logger.Error("Plc connection is null");
+                _application.Logger.Error("Plc connection is null");
                 return;
             }
             if (connection.Plc == null)
             {
-                Logger.Error("Connection.Plc is null");
+                _application.Logger.Error("Connection.Plc is null");
                 return;
             }
             if (!connection.Plc.IsConnected)
             {
-                Logger.Error("Plc is not connected");
+                _application.Logger.Error("Plc is not connected");
                 return;
             }
             try
@@ -49,12 +44,12 @@ namespace QDebug.Server
                 {
                     case "r":
                     case "read":
-                        Logger.Info("Reading...");
+                        _application.Logger.Info("Reading...");
                         HandleRead(args);
                         break;
                     case "w":
                     case "write":
-                        Logger.Info("Writing...");
+                        _application.Logger.Info("Writing...");
                         HandleWrite(args);
                         break;
                     default:
@@ -63,41 +58,43 @@ namespace QDebug.Server
             }
             catch (ArgumentException exception)
             {
-                Logger.Error("Error in argument: " + exception.Message);
+                _application.Logger.Error("Error in argument: " + exception.Message);
             }
             catch (IndexOutOfRangeException exception)
             {
-                Logger.Error("Not enough arguments: " + exception.Message);
+                _application.Logger.Error("Not enough arguments: " + exception.Message);
             }
         }
         private void HandleRead(string[] args)
         {
             try
             {
-                PLCConnection? connection = PLCConnections.Find(x => x.IP == args[0]);
+                PLCConnection? connection = _application.ConnectionUtils.FindPLCByIP(args[0]);
                 if (connection == null || connection.Plc == null) throw new ArgumentNullException("Plc connection null");
                 if (args[2] == null) throw new ArgumentNullException("Argument for address is empty");
                 var result = connection.Plc.Read(args[2]);
-                Logger.Info(result+"");
+                _application.Logger.Info(result+"");
             } catch (ArgumentNullException exception) 
-            { 
-                Logger.Error("Plc not found " + exception.Message); 
+            {
+                _application.Logger.Error("Plc not found " + exception.Message); 
             } catch (PlcException exception)
             {
-                Logger.Error("Plc read error: " + exception.Message);
+                _application.Logger.Error("Plc read error: " + exception.Message);
+                if (exception.Message.Contains("Address out of range"))
+                    _application.Logger.Debug("Check your block access settings, uncheck optimized block access or similar, (Connection mechanisms PUT/GET?)");
             } catch (InvalidAddressException exception)
             {
-                Logger.Error("Invalid address error: " + exception.Message);
+                _application.Logger.Error("Invalid address error: " + exception.Message);
             } catch (FormatException exception)
             {
-                Logger.Error("Wrong input format: " + exception.Message);
+                _application.Logger.Error("Wrong input format: " + exception.Message);
             }
         }
         private void HandleWrite(string[] args)
         {
             try
             {
-                PLCConnection? connection = PLCConnections.Find(x => x.IP == args[0]);
+                PLCConnection? connection = _application.PLCConnections.Find(x => x.IP == args[0]);
                 if (connection == null || connection.Plc == null) throw new ArgumentNullException("Plc connection null");
                 if (args[2] == null) throw new ArgumentNullException("Argument for address is empty");
                 string type = args[2].Split(".")[1].Substring(0, 3);
@@ -118,27 +115,29 @@ namespace QDebug.Server
                     default:
                         throw new InvalidOperationException("Wrong type input");
                 }
-                Logger.Info($"Wrote {args[3]} to {args[2]}");
+                _application.Logger.Info($"Wrote {args[3]} to {args[2]}");
             }
             catch (ArgumentNullException exception)
             {
-                Logger.Error("Plc not found " + exception.Message);
+                _application.Logger.Error("Plc not found " + exception.Message);
             }
             catch (PlcException exception)
             {
-                Logger.Error("Plc read error: " + exception.Message);
+                _application.Logger.Error("Plc write error: " + exception.Message);
+                if (exception.Message.Contains("Address out of range"))
+                    _application.Logger.Debug("Check your block access settings, uncheck optimized or similar");
             }
             catch (InvalidAddressException exception)
             {
-                Logger.Error("Invalid address error: " + exception.Message);
+                _application.Logger.Error("Invalid address error: " + exception.Message);
             }
             catch (FormatException exception)
             {
-                Logger.Error("Wrong input format: " + exception.Message);
+                _application.Logger.Error("Wrong input format: " + exception.Message);
             } 
             catch (Exception exception)
             {
-                Logger.Error("Generic error occured: " + exception.Message);
+                _application.Logger.Error("Generic error occured: " + exception.Message);
             }
         }
     }

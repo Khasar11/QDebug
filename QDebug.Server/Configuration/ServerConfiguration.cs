@@ -12,11 +12,11 @@ namespace QDebug.Server.Configuration
 {
     public partial class ServerConfiguration : ConfigurationFile
     {
-        private Logger Logger;
+        private Startup _application;
 
-        public ServerConfiguration(string path, Logger logger) : base(path)
+        public ServerConfiguration(string path, Startup application) : base(path)
         {
-            Logger = logger;
+            _application = application;
         }
 
         const string VENDOR = "vendor";
@@ -34,7 +34,7 @@ namespace QDebug.Server.Configuration
 
         public List<OPCUAConnection> DeserializeOPCConnections()
         {
-            Logger.Debug("Attempting to deserialize OPCUA connections");
+            _application.Logger.Debug("Attempting to deserialize OPCUA connections");
             int index = 0;
             List<OPCUAConnection> connections = new();
             XmlNodeList? nodes = base.Document.SelectNodes("/configuration/opcua/opcConnection");
@@ -50,7 +50,7 @@ namespace QDebug.Server.Configuration
                     string[] required = { URL, USER, PASS };
                     if (keys != null && !keys.ContainsAll(required))
                         throw new WrongfulConfigException(required);
-                    OPCUAConnection connection = new OPCUAConnection(keyValuePairs[URL], false, keyValuePairs[USER], keyValuePairs[PASS], Logger);
+                    OPCUAConnection connection = new OPCUAConnection(keyValuePairs[URL], false, keyValuePairs[USER], keyValuePairs[PASS], _application.Logger);
                     if (keys != null && connection is not null) connections.Add(connection);
                     index++;
                 }
@@ -84,7 +84,7 @@ namespace QDebug.Server.Configuration
 
         public List<DBConnection> DeserializeDBConnections()
         {
-            Logger.Debug("Attempting to deserialize DB connections");
+            _application.Logger.Debug("Attempting to deserialize DB connections");
             int index = 0;
             List<DBConnection> connections = new List<DBConnection>();
             XmlNodeList? nodes = base.Document.SelectNodes("/configuration/dbs/db");
@@ -104,7 +104,7 @@ namespace QDebug.Server.Configuration
                     switch (keyValuePairs[TYPE].ToLower())
                     {
                         case "mongodb":
-                            connection = new DBConnection(new MongoDBConnection(keyValuePairs[DATABASE], keyValuePairs[IP], Int16.Parse(keyValuePairs[PORT]), Logger));
+                            connection = new DBConnection(new MongoDBConnection(keyValuePairs[DATABASE], keyValuePairs[IP], Int16.Parse(keyValuePairs[PORT]), _application.Logger));
                             break;
                         default: 
                             throw new Exception("Wrongful DB type input");
@@ -140,7 +140,7 @@ namespace QDebug.Server.Configuration
         }
         public List<PLCConnection> DeserializePLCConnections()
         {
-            Logger.Debug("Attempting to deserialize PLC connections");
+            _application.Logger.Debug("Attempting to deserialize PLC connections");
             int index = 0;
             List<PLCConnection> connections = new List<PLCConnection>();
             XmlNodeList? nodes = base.Document.SelectNodes("/configuration/plcs/plcConnection");
@@ -164,7 +164,7 @@ namespace QDebug.Server.Configuration
                         keyValuePairs[IP],
                         Convert.ToInt16(keyValuePairs[RACK]),
                         Convert.ToInt16(keyValuePairs[SLOT]),
-                        Logger
+                        _application.Logger
                     );
                     if (keys != null) connections.Add(connection);
                     index++;
@@ -199,8 +199,8 @@ namespace QDebug.Server.Configuration
 
         private void DeserializeError(string ExceptionMessage, int index, string type)
         {
-            Logger.Error($"[DESERIALIZE {type}] An error occured while deserializing index {index}, please check your configuration");
-            Logger.Error(ExceptionMessage);
+            _application.Logger.Error($"[DESERIALIZE {type}] An error occured while deserializing index {index}, please check your configuration");
+            _application.Logger.Error(ExceptionMessage);
         }
     }
 }
