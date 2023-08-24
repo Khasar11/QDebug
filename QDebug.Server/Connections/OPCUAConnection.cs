@@ -1,6 +1,7 @@
-﻿using MongoDB.Driver.Core.Configuration;
-using Opc.Ua;
-using Siemens.UAClientHelper;
+﻿
+using OPCUaClient;
+using QDebug.Shared.Logger;
+using QDebug.Shared.Other;
 
 namespace QDebug.Server.Connections
 {
@@ -14,24 +15,33 @@ namespace QDebug.Server.Connections
         private string Password { get; set; }
         private bool UserAuth { get; set; }
 
-        private readonly UAClientHelperAPI UAClientHelperAPI;
+        private Logger Logger;
 
-        public OPCUAConnection(string Url, bool UserAuth, string UserName, string Password)
+        private UaClient? Client { get; set; }
+
+
+        public OPCUAConnection(string url, bool userAuth, string userName, string password, Logger logger)
         {
-            this.Url = Url;
-            this.UserAuth = UserAuth;
-            this.UserName = UserName;
-            this.Password = Password;
-            this.UAClientHelperAPI = new UAClientHelperAPI();
+            Url = url;
+            UserAuth = userAuth;
+            UserName = userName;
+            Password = password;
+            Logger = logger;
         }
 
         public async Task ConnectAsync()
         {
-            await UAClientHelperAPI.Connect(new EndpointDescription(Url), UserAuth, UserName, Password);
-            if (UAClientHelperAPI.Session.Connected)
+            Logger.Info($"OPCUA {Url} AS {UserAuth} feedback: Connecting...");
+            try
             {
-                Console.WriteLine($"OPCUA {UserName} AT {Url} feedback: Connection OK");
-            } else Console.WriteLine($"OPCUA {UserName} AT {Url} feedback: Connection Failure");
+                Client = new(Utils.GetLocalIPAddress(), Url, false, true, UserName, Password);
+                await Client.ConnectAsync(5, true);
+                if (Client.IsConnected) Logger.Info($"OPCUA {Url} AS {UserAuth} feedback: Connected");
+                else throw new Exception($"Failure even after connecting async");
+            } catch (Exception exception)
+            {
+                Logger.Error($"OPCUA {Url} AS {UserAuth} feedback: Connection failure {exception.Message}");
+            }
         }
     }
 }

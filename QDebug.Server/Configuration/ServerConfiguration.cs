@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver.Linq;
+﻿using Amazon.Runtime.Internal.Endpoints.StandardLibrary;
+using MongoDB.Driver.Linq;
 using QDebug.Server.Connections;
 using QDebug.Server.Connections.DB;
 using QDebug.Shared.Configuration;
@@ -11,11 +12,11 @@ namespace QDebug.Server.Configuration
 {
     public partial class ServerConfiguration : ConfigurationFile
     {
-        private Logger logger;
+        private Logger Logger;
 
         public ServerConfiguration(string path, Logger logger) : base(path)
         {
-            this.logger = logger;
+            Logger = logger;
         }
 
         const string VENDOR = "vendor";
@@ -29,17 +30,61 @@ namespace QDebug.Server.Configuration
         const string USER = "user";
         const string PASS = "pass";
         const string COMMENT = "#comment";
+        const string URL = "url";
 
         public List<OPCUAConnection> DeserializeOPCConnections()
         {
+            Logger.Debug("Attempting to deserialize OPCUA connections");
             int index = 0;
-            List<OPCUAConnection> connections = new List<OPCUAConnection>();
+            List<OPCUAConnection> connections = new();
             XmlNodeList? nodes = base.Document.SelectNodes("/configuration/opcua/opcConnection");
+            try
+            {
+                if (nodes is null) throw new Exception("Xml nodes while deserializing PLC connections is empty");
+                foreach (XmlNode node in nodes)
+                {
+                    Dictionary<string, string> keyValuePairs = new();
+                    foreach (XmlNode node2 in node.ChildNodes)
+                        if (node2.Name != COMMENT && node2.InnerText != null) keyValuePairs.Add(node2.Name, node2.InnerText);
+                    string[] keys = keyValuePairs.Keys.ToArray();
+                    string[] required = { URL, USER, PASS };
+                    if (keys != null && !keys.ContainsAll(required))
+                        throw new WrongfulConfigException(required);
+                    OPCUAConnection connection = new OPCUAConnection(keyValuePairs[URL], false, keyValuePairs[USER], keyValuePairs[PASS], Logger);
+                    if (keys != null && connection is not null) connections.Add(connection);
+                    index++;
+                }
+            }
+            catch (FormatException exception)
+            {
+                DeserializeError(exception.Message, index, "OPCUA");
+            }
+            catch (OverflowException exception)
+            {
+                DeserializeError(exception.Message, index, "OPCUA");
+            }
+            catch (ArgumentException exception)
+            {
+                DeserializeError(exception.Message, index, "OPCUA");
+            }
+            catch (XPathException exception)
+            {
+                DeserializeError(exception.Message, index, "OPCUA");
+            }
+            catch (WrongfulConfigException exception)
+            {
+                DeserializeError(exception.Message, index, "OPCUA");
+            }
+            catch (Exception exception)
+            {
+                DeserializeError(exception.Message, index, "OPCUA");
+            }
             return connections;
         }
+
         public List<DBConnection> DeserializeDBConnections()
         {
-            logger.Debug("Attempting to deserialize DB connections");
+            Logger.Debug("Attempting to deserialize DB connections");
             int index = 0;
             List<DBConnection> connections = new List<DBConnection>();
             XmlNodeList? nodes = base.Document.SelectNodes("/configuration/dbs/db");
@@ -59,7 +104,7 @@ namespace QDebug.Server.Configuration
                     switch (keyValuePairs[TYPE].ToLower())
                     {
                         case "mongodb":
-                            connection = new DBConnection(new MongoDBConnection(keyValuePairs[DATABASE], keyValuePairs[IP], Int16.Parse(keyValuePairs[PORT]), logger));
+                            connection = new DBConnection(new MongoDBConnection(keyValuePairs[DATABASE], keyValuePairs[IP], Int16.Parse(keyValuePairs[PORT]), Logger));
                             break;
                         default: 
                             throw new Exception("Wrongful DB type input");
@@ -95,7 +140,7 @@ namespace QDebug.Server.Configuration
         }
         public List<PLCConnection> DeserializePLCConnections()
         {
-            logger.Debug("Attempting to deserialize PLC connections");
+            Logger.Debug("Attempting to deserialize PLC connections");
             int index = 0;
             List<PLCConnection> connections = new List<PLCConnection>();
             XmlNodeList? nodes = base.Document.SelectNodes("/configuration/plcs/plcConnection");
@@ -119,7 +164,7 @@ namespace QDebug.Server.Configuration
                         keyValuePairs[IP],
                         Convert.ToInt16(keyValuePairs[RACK]),
                         Convert.ToInt16(keyValuePairs[SLOT]),
-                        logger
+                        Logger
                     );
                     if (keys != null) connections.Add(connection);
                     index++;
@@ -154,8 +199,8 @@ namespace QDebug.Server.Configuration
 
         private void DeserializeError(string ExceptionMessage, int index, string type)
         {
-            logger.Error($"[DESERIALIZE {type}] An error occured while deserializing index {index}, please check your configuration");
-            logger.Error(ExceptionMessage);
+            Logger.Error($"[DESERIALIZE {type}] An error occured while deserializing index {index}, please check your configuration");
+            Logger.Error(ExceptionMessage);
         }
     }
 }

@@ -2,7 +2,6 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using QDebug.Server.Connections.DB;
-using QDebug.Server.Lib;
 using QDebug.Shared.Logger;
 
 namespace QDebug.Server.Connections
