@@ -1,4 +1,5 @@
 ﻿
+using QDebug.Server;
 using QDebug.Server.Configuration;
 using QDebug.Server.Connections;
 using QDebug.Server.Connections.DB;
@@ -8,7 +9,8 @@ namespace QDebugServer
 {
     class QDebugServer
     {
-        static async Task Main(string[] args)
+        private static bool reading = true;
+        static void Main(string[] args)
         {
             DateTime startupTime = DateTime.Now;
 
@@ -20,17 +22,29 @@ namespace QDebugServer
             List<PLCConnection> PLCConnections = Config.DeserializePLCConnections();
             List<DBConnection> DBConnections = Config.DeserializeDBConnections();
             List<OPCUAConnection> OPCUAConnections = Config.DeserializeOPCConnections();
+
+            CommandHandler commandHandler = new CommandHandler(logger, ref PLCConnections, ref DBConnections, ref OPCUAConnections);
+
             foreach (DBConnection connection in DBConnections)
             {
                 connection.IDBConnection.ConnectSync();
             }
             foreach (OPCUAConnection connection in OPCUAConnections)
             {
-                await connection.ConnectAsync();
+                connection.ConnectAsync();
             }
             foreach (PLCConnection connection in PLCConnections)
             {
-                await connection.ConnectAsync();
+                connection.ConnectAsync();
+            }
+
+            while (reading)
+            {
+                string? Read = Console.ReadLine();
+                if (Read is not null)
+                {
+                    commandHandler.EvaluateString(Read, ref reading);
+                }
             }
         }
     }

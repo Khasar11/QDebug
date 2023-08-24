@@ -1,4 +1,4 @@
-﻿using Amazon.Runtime.Internal.Endpoints.StandardLibrary;
+﻿
 using QDebug.Shared.Logger;
 using S7.Net;
 
@@ -40,9 +40,8 @@ namespace QDebug.Server.Connections
                     await Plc.OpenAsync();
                     if (Plc.IsConnected)
                     {
-                        /* insert mongodb caching here */
+                        /* insert mongodb initial caching here */
                         logger.Info($"PLC {CpuType} AT {IP} feedback: Connection OK");
-                        Plc.Close();
                     }
                     else
                     {
