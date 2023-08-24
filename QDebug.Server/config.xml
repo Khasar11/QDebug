@@ -30,10 +30,10 @@
 	</opcua>
 	<dbs>
 		<db>
-			<type>MongoDB</type>
-			<ip>127.0.0.1</ip>
-			<port>27017</port>
-			<database>testDB</database>
+			<type>MongoDB</type> <!-- Valid types in seperate DB types file -->
+			<ip>127.0.0.1</ip> <!-- IP address ex. 127.0.0.1 -->
+			<port>27017</port> <!-- Port ex. 27017 for default MongoDB -->
+			<database>testDB</database> <!-- database name to connect to -->
 		</db>
 		<db>
 			<type>MongoDB</type>
