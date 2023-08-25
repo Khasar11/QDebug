@@ -12,3 +12,6 @@ Example communication:
 PLC -> OPCUA -> Server with configured connection to OPCUA -> Client
 
 Client modification -> Server -> S7Net/respective lib -> PLC
+
+
+The full project is planned to use blazor webassembly as frontend but for now both will be written as a console app to start
