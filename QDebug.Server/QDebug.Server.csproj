@@ -16,8 +16,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Listeners\" />
     <Folder Include="Controllers\" />
+    <Folder Include="Events\" />
   </ItemGroup>
 
   <ItemGroup>

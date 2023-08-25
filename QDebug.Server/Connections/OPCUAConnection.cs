@@ -17,7 +17,7 @@ namespace QDebug.Server.Connections
 
         private Logger Logger;
 
-        private UaClient? Client { get; set; }
+        public UaClient? Client { get; set; }
 
 
         public OPCUAConnection(string url, bool userAuth, string userName, string password, Logger logger)
