@@ -15,6 +15,7 @@ namespace QDebug.Server.Connections
         public int Port { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public string Database { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public Logger Logger { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public bool isConnected { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public void ConnectSync()
         {

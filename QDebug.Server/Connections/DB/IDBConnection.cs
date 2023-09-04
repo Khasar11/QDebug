@@ -10,6 +10,7 @@ namespace QDebug.Server.Connections.DB
         public int Port { get; set; }
         public string Database { get; set; }
         public Logger Logger { get; set; }
+        public bool isConnected { get; set; }
         void ConnectSync();
     }
 }

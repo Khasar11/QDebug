@@ -17,7 +17,7 @@ namespace QDebug.Server
         ConsoleLogger ConsoleLogger;
         FileLogger FileLogger;
         public Logger Logger;
-        ServerConfiguration Config;
+        public ServerConfiguration Config;
         public List<PLCConnection> PLCConnections;
         public List<DBConnection> DBConnections;
         public List<OPCUAConnection> OPCUAConnections;

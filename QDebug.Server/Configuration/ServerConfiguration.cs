@@ -31,6 +31,7 @@ namespace QDebug.Server.Configuration
         const string PASS = "pass";
         const string COMMENT = "#comment";
         const string URL = "url";
+        const string HANDLE = "handle";
 
         public List<OPCUAConnection> DeserializeOPCConnections()
         {
@@ -47,10 +48,10 @@ namespace QDebug.Server.Configuration
                     foreach (XmlNode node2 in node.ChildNodes)
                         if (node2.Name != COMMENT && node2.InnerText != null) keyValuePairs.Add(node2.Name, node2.InnerText);
                     string[] keys = keyValuePairs.Keys.ToArray();
-                    string[] required = { URL, USER, PASS };
+                    string[] required = { URL, USER, PASS, HANDLE };
                     if (keys != null && !keys.ContainsAll(required))
                         throw new WrongfulConfigException(required);
-                    OPCUAConnection connection = new OPCUAConnection(keyValuePairs[URL], false, keyValuePairs[USER], keyValuePairs[PASS], _application.Logger);
+                    OPCUAConnection connection = new OPCUAConnection(keyValuePairs[URL], false, keyValuePairs[USER], keyValuePairs[PASS], uint.Parse(keyValuePairs[HANDLE]), _application.Logger);
                     if (keys != null && connection is not null) connections.Add(connection);
                     index++;
                 }

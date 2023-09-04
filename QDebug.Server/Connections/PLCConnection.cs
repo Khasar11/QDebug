@@ -16,6 +16,8 @@ namespace QDebug.Server.Connections
 
         private Logger logger;
 
+        public bool isConnected { get; set; } = false;
+
         public PLCConnection(string Vendor, CpuType CpuType, string IP, short Rack, short Slot, Logger logger)
         {
             this.Vendor = Vendor;
@@ -48,6 +50,18 @@ namespace QDebug.Server.Connections
                         logger.Warning($"PLC {CpuType} AT {IP} feedback: Connection Failure");
                         logger.Debug(help);
                     }
+
+                    var timer = new Timer(_ => {
+                        if (Plc.IsConnected)
+                        {
+                            isConnected = true;
+                        }
+                        else
+                        {
+                            isConnected = false;
+                            logger.Warning($"PLC {CpuType} AT {IP} feedback: Disconnected");
+                        }
+                    }, null, 0, 5000);
                 } catch(Exception exception) { 
                     logger.Error($"PLC {CpuType} AT {IP} feedback: Connection Failure with exception {Environment.NewLine}{exception.Message}");
                     logger.Debug(help);

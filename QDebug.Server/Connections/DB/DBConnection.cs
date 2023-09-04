@@ -11,7 +11,5 @@ namespace QDebug.Server.Connections.DB
         {
             IDBConnection = DBConnection;
         }
-
-
     }
 }

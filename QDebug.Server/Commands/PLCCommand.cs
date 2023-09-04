@@ -1,5 +1,6 @@
 ﻿using QDebug.Server.Connections;
 using S7.Net;
+using Spectre.Console;
 
 namespace QDebug.Server.Events.Commands
 {
@@ -11,21 +12,6 @@ namespace QDebug.Server.Events.Commands
         {
             _application = application;
             PLCConnection? connection = application.ConnectionUtils.FindPLCByIP(args[0]);
-            if (connection == null)
-            {
-                application.Logger.Error("Plc connection is null");
-                return;
-            }
-            if (connection.Plc == null)
-            {
-                application.Logger.Error("Connection.Plc is null");
-                return;
-            }
-            if (!connection.Plc.IsConnected)
-            {
-                application.Logger.Error("Plc is not connected");
-                return;
-            }
             try
             {
                 switch (args[1].ToLower())
@@ -40,8 +26,13 @@ namespace QDebug.Server.Events.Commands
                         application.Logger.Info("Writing...");
                         Write(args); // subcommand
                         break;
+                    case "s":
+                    case "status":
+                        application.Logger.Info($"Fetching status for plc {args[0]}");
+                        Status(connection);
+                        break;
                     default:
-                        throw new ArgumentException($"Wrongful input at index 0: {args[0]}, must be 'r'/'w'");
+                        throw new ArgumentException($"Wrongful input at index 0: {args[0]}, must be 'r'/'w'/'s'");
                 }
             }
             catch (ArgumentException exception)
@@ -52,6 +43,21 @@ namespace QDebug.Server.Events.Commands
             {
                 application.Logger.Error("Not enough arguments: " + exception.Message);
             }
+        }
+
+        private void Status(PLCConnection connection)
+        {
+            var plc = connection.Plc;
+            var state = "[gray on black]unknown [/]";
+            if (plc.IsConnected) state = "[lime on black]Connected [/]";
+            if (!plc.IsConnected) state = "[red on black]Disconnected [/]";
+            AnsiConsole.MarkupLine($"[white on black]Status for PLC at [violet on black]{plc.IP}:{plc.Port}:[/][/]");
+            AnsiConsole.MarkupLine("Inst: [yellow on black]{0}[/]", plc.GetType());
+            AnsiConsole.MarkupLine("CPU: [green on black]{0}[/]", plc.CPU);
+            AnsiConsole.MarkupLine("Manufacturer name: [yellow on black]{0}[/]", connection.Vendor);
+            AnsiConsole.MarkupLine("State: {0}", state);
+            AnsiConsole.MarkupLine("Current time (not plc time): [cyan on black]{0}[/]", DateTime.Now);
+            AnsiConsole.MarkupLine("Max PDU size: [cyan on black]{0}[/]", plc.MaxPDUSize);
         }
 
         private void Write(string[] args)
