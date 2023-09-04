@@ -1,4 +1,5 @@
 ﻿
+using QDebug.Server.Objects;
 using QDebug.Shared.Logger;
 
 namespace QDebug.Server.Connections.DB
@@ -12,5 +13,11 @@ namespace QDebug.Server.Connections.DB
         public Logger Logger { get; set; }
         public bool isConnected { get; set; }
         void ConnectSync();
+
+
+        // t == table or collection, object is object to write
+        void Cache(string t, BasicObject value);
+
+        object ReadCache(string t);
     }
 }

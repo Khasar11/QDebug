@@ -1,4 +1,5 @@
 ﻿using QDebug.Server.Connections.DB;
+using QDebug.Server.Objects;
 using QDebug.Shared.Logger;
 
 namespace QDebug.Server.Connections
@@ -17,7 +18,22 @@ namespace QDebug.Server.Connections
         public Logger Logger { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public bool isConnected { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
+        public void Cache(string t, object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Cache(string t, BasicObject value)
+        {
+            throw new NotImplementedException();
+        }
+
         public void ConnectSync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public object ReadCache(string t)
         {
             throw new NotImplementedException();
         }

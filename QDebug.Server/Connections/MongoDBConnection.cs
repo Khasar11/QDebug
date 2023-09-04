@@ -2,8 +2,8 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using QDebug.Server.Connections.DB;
+using QDebug.Server.Objects;
 using QDebug.Shared.Logger;
-using S7.Net;
 
 namespace QDebug.Server.Connections
 {
@@ -64,5 +64,51 @@ namespace QDebug.Server.Connections
             }
         }
 
+        public void Cache(string t, BasicObject bObject)
+        {
+
+            IMongoCollection<BasicObject> mongoCollection = ConnectedDatabase.GetCollection<BasicObject>(t);
+
+            var filter = Builders<BasicObject>.Filter.Eq(x => x.Tag, bObject.Tag);
+            var opts = new UpdateOptions() { IsUpsert = true };
+
+            var update = Builders<BasicObject>.Update;
+            var updates = new List<UpdateDefinition<BasicObject>>();
+
+            updates.Add(update.Set("Tag", bObject.Tag));
+            updates.Add(update.Set("Value", bObject.Value));
+            updates.Add(update.Set("lastWrite", DateTime.Now));
+
+            BasicObject? oldObject = null;
+
+            try
+            {
+                oldObject = mongoCollection.Find(filter).First();
+            } catch (System.InvalidOperationException exception) { 
+                Logger.Error($"Cant find old element in collection at {IP}:{Port}"); 
+            }
+            bool wroteOld = false;
+            if (oldObject != null)
+            {
+                Dictionary<string, string> logs = oldObject.logs != null ? oldObject.logs : new Dictionary<string, string>();
+                if (logs.Count >= 10)
+                {
+                    var dates = logs.Keys.ToList();
+                    logs.Remove(dates.OrderBy(date => date).First()); // remove oldest value, here it can be inserted into archive as well
+                }
+                if (oldObject.Value != bObject.Value) logs.Add(DateTime.Now.ToString(), oldObject.Value);
+
+                updates.Add(update.Set("logs", logs));
+                wroteOld = true;
+            }
+            Logger.Debug($"Caching {bObject.Tag} : {bObject.Value} to collection {t}, logging old: {wroteOld}");
+
+            mongoCollection.UpdateOne(filter, update.Combine(updates), opts);
+        }
+
+        public object ReadCache(string t)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

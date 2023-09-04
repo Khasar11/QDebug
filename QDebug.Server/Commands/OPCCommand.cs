@@ -1,6 +1,7 @@
 ﻿using Amazon.Runtime.Internal.Util;
 using MongoDB.Driver.Core.Bindings;
 using QDebug.Server.Connections;
+using QDebug.Server.Objects;
 using S7.Net;
 using Spectre.Console;
 using System.Net;
@@ -180,7 +181,7 @@ namespace QDebug.Server.Commands
             _application.Logger.Debug($"Attempting to subscribe entire DB at {connection.Url} - {args[3]}");
 
             BrowseResponse? browseResponse = null;
-            try
+            try // db must be browsed to find sub element nodes
             {
                 BrowseRequest browseRequest = new BrowseRequest
                 {
@@ -253,14 +254,21 @@ namespace QDebug.Server.Commands
 
         private async void Sub(MonitoredItemCreateRequest[] monitoredItems, OPCUAConnection connection, Dictionary<uint, string> indexedNodeIDs)
         {
+
+            CreateSubscriptionRequest subRequest = new()
+            {
+                RequestedPublishingInterval = 2000,
+                RequestedMaxKeepAliveCount = 10,
+                PublishingEnabled = true
+            };
+
+            if (monitoredItems.Length >= 100) // split up monitored items groups if more than 100 at once
+            {
+
+            }
+
             try
             {
-                CreateSubscriptionRequest subRequest = new()
-                {
-                    RequestedPublishingInterval = 1000,
-                    RequestedMaxKeepAliveCount = 10,
-                    PublishingEnabled = true
-                };
                 var subscriptionResponse = await connection.Client.CreateSubscriptionAsync(subRequest);
                 var id = subscriptionResponse.SubscriptionId;
 
@@ -276,14 +284,18 @@ namespace QDebug.Server.Commands
 
                 var token = connection.Client.Where(pr => pr.SubscriptionId == id).Subscribe(pr =>
                 {
-                    _application.Logger.Info($"new values for connection {connection.Url}:sub:{pr.SubscriptionId};");
+                    _application.Logger.Info($"new Value for connection {connection.Url}:sub:{pr.SubscriptionId};");
                     // loop thru all the data change notifications
                     var dcns = pr.NotificationMessage.NotificationData.OfType<DataChangeNotification>();
                     foreach (var dcn in dcns)
                     {
                         foreach (var min in dcn.MonitoredItems)
                         {
-                            _application.Logger.Info($"NodeId: {indexedNodeIDs[min.ClientHandle]}, Value: {min.Value.Value}");
+                            //_application.Logger.Info($"NodeId: {indexedNodeIDs[min.ClientHandle]}, Value: {min.Value.Value}");
+                            _application.DBConnections[0].IDBConnection.Cache(
+                                connection.Ip+":"+connection.Port, 
+                                new BasicObject(indexedNodeIDs[min.ClientHandle], min.Value.Value+""
+                                ));
                         }
                     }
                 });

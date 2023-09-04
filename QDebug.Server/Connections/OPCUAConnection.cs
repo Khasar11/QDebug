@@ -4,6 +4,7 @@ using QDebug.Shared.Logger;
 using QDebug.Shared.Other;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 using Workstation.ServiceModel.Ua;
 using Workstation.ServiceModel.Ua.Channels;
 using Utils = QDebug.Shared.Other.Utils;
@@ -28,15 +29,25 @@ namespace QDebug.Server.Connections
 
         public uint Handle { get; set; }
 
+        // ip and port deconstructed from Url
+        public readonly string Ip;
+        public readonly int Port;
+
 
         public OPCUAConnection(string url, bool userAuth, string userName, string password, uint handle, Logger logger)
         {
             Url = url;
+            if (!Url.EndsWith("/")) Url = Url + "/"; // incase / is missing at end (only needed for getting readonly port)
             UserAuth = userAuth;
             UserName = userName;
             Password = password;
             Logger = logger;
             Handle = handle;
+
+            Regex reg = new Regex("(?<=//)(.*)(?=:)"); // get everything between // and :
+            Ip = reg.Match(Url).Value;
+            var postIp = Url.Substring(Url.NthIndexOf(':', 2) + 1);
+            Port = int.Parse(postIp.Substring(0, postIp.IndexOf('/')));
             InitClient();
         }
 
