@@ -1,12 +1,15 @@
-﻿
+﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace QDebug.Server.Objects
 {
-    public class BasicObject
+    internal class BasicArchiveObject
     {
-
         // to write to mongodb
         [BsonElement("_id")]
         public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
@@ -14,24 +17,13 @@ namespace QDebug.Server.Objects
         [BsonElement("tag")]
         public string Tag { get; set; }
 
-        [BsonElement("value")]
-        public string Value{ get; set; }
-
         [BsonElement("logs")]
         public Dictionary<string, string> Logs { get; set; } = new Dictionary<string, string>();
 
-        [BsonElement("lastWrite")]
-        public DateTime LastWrite { get; set; }
-
-        public BasicObject(string tag, string addValue)
+        public BasicArchiveObject(string tag, string addValue)
         {
             Tag = tag;
-            Value = addValue;
-        }
-
-        public string Pretty()
-        {
-            return $"Tag: {Tag}, Value: {Value}";
+            Logs.Add(DateTime.Now.ToString(), addValue);
         }
     }
 }

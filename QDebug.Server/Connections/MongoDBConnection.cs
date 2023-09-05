@@ -67,7 +67,7 @@ namespace QDebug.Server.Connections
         public void Cache(string t, BasicObject bObject)
         {
 
-            IMongoCollection<BasicObject> mongoCollection = ConnectedDatabase.GetCollection<BasicObject>(t);
+            IMongoCollection<BasicObject> mongoCollection = ConnectedDatabase.GetCollection<BasicObject>("opc"+t);
 
             var filter = Builders<BasicObject>.Filter.Eq(x => x.Tag, bObject.Tag);
             var opts = new UpdateOptions() { IsUpsert = true };
@@ -75,8 +75,8 @@ namespace QDebug.Server.Connections
             var update = Builders<BasicObject>.Update;
             var updates = new List<UpdateDefinition<BasicObject>>();
 
-            updates.Add(update.Set("Tag", bObject.Tag));
-            updates.Add(update.Set("Value", bObject.Value));
+            updates.Add(update.Set("tag", bObject.Tag));
+            updates.Add(update.Set("value", bObject.Value));
             updates.Add(update.Set("lastWrite", DateTime.Now));
 
             BasicObject? oldObject = null;
@@ -90,11 +90,12 @@ namespace QDebug.Server.Connections
             bool wroteOld = false;
             if (oldObject != null)
             {
-                Dictionary<string, string> logs = oldObject.logs != null ? oldObject.logs : new Dictionary<string, string>();
+                Dictionary<string, string> logs = oldObject.Logs != null ? oldObject.Logs : new Dictionary<string, string>();
                 if (logs.Count >= 10)
                 {
                     var dates = logs.Keys.ToList();
-                    logs.Remove(dates.OrderBy(date => date).First()); // remove oldest value, here it can be inserted into archive as well
+                    ArchiveAsync(bObject.Tag, DateTime.Now, logs[dates.OrderBy(date => date).First()], t); // insert oldest value into archive
+                    logs.Remove(dates.OrderBy(date => date).First()); // remove oldest value
                 }
                 if (oldObject.Value != bObject.Value) logs.Add(DateTime.Now.ToString(), oldObject.Value);
 
@@ -104,6 +105,14 @@ namespace QDebug.Server.Connections
             Logger.Debug($"Caching {bObject.Tag} : {bObject.Value} to collection {t}, logging old: {wroteOld}");
 
             mongoCollection.UpdateOne(filter, update.Combine(updates), opts);
+        }
+
+        private async Task ArchiveAsync(string tag, DateTime now, string v, string t)
+        {
+            IMongoCollection<BasicArchiveObject> archiveCollection = ConnectedDatabase.GetCollection<BasicArchiveObject>("opc"+t+"-archive");
+            Logger.Debug($"Archiving {tag}, {now}, {v}");
+                
+            //archive instructions for BasicArchiveObject here
         }
 
         public object ReadCache(string t)

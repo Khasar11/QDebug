@@ -7,6 +7,7 @@ using QDebug.Shared.Logger;
 using S7.Net;
 using System.Xml;
 using System.Xml.XPath;
+using Workstation.ServiceModel.Ua;
 
 namespace QDebug.Server.Configuration
 {
@@ -202,6 +203,11 @@ namespace QDebug.Server.Configuration
         {
             _application.Logger.Error($"[DESERIALIZE {type}] An error occured while deserializing index {index}, please check your configuration");
             _application.Logger.Error(ExceptionMessage);
+        }
+
+        public string GetConfigObject(string path)
+        {
+            return base.Document.SelectSingleNode(path).InnerText;
         }
     }
 }

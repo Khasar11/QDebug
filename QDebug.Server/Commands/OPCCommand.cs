@@ -178,7 +178,7 @@ namespace QDebug.Server.Commands
 
         private async void SubscribeDB(string[] args, OPCUAConnection connection)
         {
-            _application.Logger.Debug($"Attempting to subscribe entire DB at {connection.Url} - {args[3]}");
+            _application.Logger.Info($"Attempting to subscribe entire DB at {connection.Url} - {args[3]}");
 
             BrowseResponse? browseResponse = null;
             try // db must be browsed to find sub element nodes
@@ -234,7 +234,7 @@ namespace QDebug.Server.Commands
 
         private async void Subscribe(string[] args, OPCUAConnection connection)
         {
-            _application.Logger.Debug($"Attempting to Subscribe to opcua at {connection.Url} - {args[3]}");
+            _application.Logger.Info($"Attempting to Subscribe to opcua at {connection.Url} - {args[3]}");
             Sub(new[] {
                     new MonitoredItemCreateRequest {
                         ItemToMonitor = new ReadValueId {
@@ -284,7 +284,7 @@ namespace QDebug.Server.Commands
 
                 var token = connection.Client.Where(pr => pr.SubscriptionId == id).Subscribe(pr =>
                 {
-                    _application.Logger.Info($"new Value for connection {connection.Url}:sub:{pr.SubscriptionId};");
+                    _application.Logger.Debug($"new Value for connection {connection.Url}:sub:{pr.SubscriptionId};");
                     // loop thru all the data change notifications
                     var dcns = pr.NotificationMessage.NotificationData.OfType<DataChangeNotification>();
                     foreach (var dcn in dcns)

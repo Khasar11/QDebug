@@ -3,11 +3,10 @@ using QDebug.Server.Connections;
 using QDebug.Server.Connections.DB;
 using QDebug.Server.Lib;
 using QDebug.Shared.Logger;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using QDebug.Shared.Other;
+using SocketIOSharp.Common;
+using SocketIOSharp.Server;
+using SocketIOSharp.Server.Client;
 
 namespace QDebug.Server
 {
@@ -17,36 +16,48 @@ namespace QDebug.Server
         ConsoleLogger ConsoleLogger;
         FileLogger FileLogger;
         public Logger Logger;
-        public ServerConfiguration Config;
+        public static ServerConfiguration Config;
         public List<PLCConnection> PLCConnections;
         public List<DBConnection> DBConnections;
         public List<OPCUAConnection> OPCUAConnections;
-        CommandHandler commandHandler;
+        CommandHandler CommandHandler;
         bool reading = true;
         DateTime startupTime = DateTime.Now;
 
         private Startup _application;
         public ConnectionUtils ConnectionUtils;
 
+        SocketIOServer? SServer;
+
         public Startup()
         {
             _application = this;
 
-            ConsoleLogger = new ConsoleLogger();
+            Config = new("./config.xml", _application);
+
+            ConsoleLogger = new ConsoleLogger(Config.GetConfigObject("/configuration/mode"));
             FileLogger = new FileLogger($"./logs/{startupTime.Year}_{startupTime.Month}_{startupTime.Day}_{startupTime.Hour}_{startupTime.Minute}_{startupTime.Second}.log");
             Logger = new Logger(ConsoleLogger);
 
-            Config = new("./config.xml", _application);
+
             PLCConnections = Config.DeserializePLCConnections();
             DBConnections = Config.DeserializeDBConnections();
             OPCUAConnections = Config.DeserializeOPCConnections();
 
             ConnectionUtils = new ConnectionUtils(_application);
-            commandHandler = new CommandHandler(_application);
+            CommandHandler = new CommandHandler(_application);
+            SServer = new SocketIOServer(new SocketIOServerOption(
+                ushort.Parse(Config.GetConfigObject("/configuration/socketPort")
+                    )
+                ));
         }
 
         public void FireStartup()
         {
+
+            SServer.Start();
+            InitSocketServer();
+            
 
             foreach (DBConnection connection in DBConnections)
             {
@@ -66,9 +77,26 @@ namespace QDebug.Server
                 string? Read = Console.ReadLine();
                 if (Read is not null)
                 {
-                    commandHandler.EvaluateString(Read, ref reading);
+                    CommandHandler.EvaluateString(Read, ref reading);
                 }
             }
+        }
+
+        public void InitSocketServer()
+        {
+            Logger.Info($"Initializing socket server @{Utils.GetLocalIPAddress()}:{Config.GetConfigObject("/configuration/socketPort")}");
+
+            SServer.OnConnection((SocketIOSocket socket) =>
+            {
+                Logger.Debug($"Socket connect: {socket}");
+
+                socket.SendCache(Logger); // broadcast mongodb cache to user
+
+                socket.On(SocketIOEvent.DISCONNECT, () =>
+                {
+                    Logger.Debug($"Socket disconnect: {socket}");
+                });
+            });
         }
     }
 }
