@@ -1,21 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+    <PropertyGroup>
+      <OutputType>Exe</OutputType>
+      <TargetFramework>net6.0</TargetFramework>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <Nullable>enable</Nullable>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="Listeners\" />
-    <Folder Include="Controllers\" />
-  </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Listeners\" />
+      <Folder Include="Controllers\" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MongoDB.Driver" Version="2.21.0" />
-    <PackageReference Include="S7netplus" Version="0.20.0" />
-    <PackageReference Include="System.Net.Sockets" Version="4.3.0" />
-  </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="SocketIOSharp" Version="2.0.3" />
+      <PackageReference Include="System.Net.Sockets" Version="4.3.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\QDebug.Shared\QDebug.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+    	<None Update="client-config.xml">
+    		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    	</None>
+    </ItemGroup>
 
 </Project>

@@ -262,7 +262,7 @@ namespace QDebug.Server.Commands
                 PublishingEnabled = true
             };
 
-            if (monitoredItems.Length >= 100) // split up monitored items groups if more than 100 at once
+            if (monitoredItems.Length >= 100) // split up monitored items groups if more than 100 at once since >100 changes cant be listened to per group
             {
 
             }
@@ -296,6 +296,7 @@ namespace QDebug.Server.Commands
                                 connection.Ip+":"+connection.Port, 
                                 new BasicObject(indexedNodeIDs[min.ClientHandle], min.Value.Value+""
                                 ));
+                            _application.SServer.Emit("vc", (indexedNodeIDs[min.ClientHandle], min.Value.Value)); // value change
                         }
                     }
                 });

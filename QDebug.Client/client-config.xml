@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+	<mode>DEBUG</mode> <!-- NORMAL, DEBUG -->
+	<socket>
+		<destination-ip>localhost</destination-ip> <!-- IP for server -->
+		<destination-port>9001</destination-port> <!-- Port for server -->
+	</socket>
+</configuration>

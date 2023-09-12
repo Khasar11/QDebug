@@ -27,13 +27,13 @@ namespace QDebug.Server
         private Startup _application;
         public ConnectionUtils ConnectionUtils;
 
-        SocketIOServer? SServer;
+        public SocketIOServer? SServer;
 
         public Startup()
         {
             _application = this;
 
-            Config = new("./config.xml", _application);
+            Config = new("./server-config.xml", _application);
 
             ConsoleLogger = new ConsoleLogger(Config.GetConfigObject("/configuration/mode"));
             FileLogger = new FileLogger($"./logs/{startupTime.Year}_{startupTime.Month}_{startupTime.Day}_{startupTime.Hour}_{startupTime.Minute}_{startupTime.Second}.log");

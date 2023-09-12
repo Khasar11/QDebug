@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32922.545
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QDebug.Client", "QDebug\QDebug.Client.csproj", "{5DF3460E-91C8-4409-916E-8FF7A01449A5}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QDebug.Server", "QDebug.Server\QDebug.Server.csproj", "{7CC14E8B-7E0C-41B3-9CDC-0341751E524D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QDebug.Shared", "QDebug.Shared\QDebug.Shared.csproj", "{D073F1BD-F652-4AAB-AFD8-0A3275E3AE7B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QDebug.Client", "QDebug.Client\QDebug.Client.csproj", "{19385ACC-CDD5-4E74-AA26-21D16F5F44BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5DF3460E-91C8-4409-916E-8FF7A01449A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5DF3460E-91C8-4409-916E-8FF7A01449A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5DF3460E-91C8-4409-916E-8FF7A01449A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5DF3460E-91C8-4409-916E-8FF7A01449A5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7CC14E8B-7E0C-41B3-9CDC-0341751E524D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7CC14E8B-7E0C-41B3-9CDC-0341751E524D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CC14E8B-7E0C-41B3-9CDC-0341751E524D}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -27,6 +23,10 @@ Global
 		{D073F1BD-F652-4AAB-AFD8-0A3275E3AE7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D073F1BD-F652-4AAB-AFD8-0A3275E3AE7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D073F1BD-F652-4AAB-AFD8-0A3275E3AE7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19385ACC-CDD5-4E74-AA26-21D16F5F44BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19385ACC-CDD5-4E74-AA26-21D16F5F44BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19385ACC-CDD5-4E74-AA26-21D16F5F44BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19385ACC-CDD5-4E74-AA26-21D16F5F44BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
